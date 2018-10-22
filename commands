@@ -1,0 +1,33 @@
+less Documents/Project/data/googleplaystore.csv
+less Documents/Project/data/googleplaystore_user_reviews.csv
+
+hadoop fs -mkdir -p project/data/apps
+hadoop fs -mkdir -p project/data/reviews
+
+hadoop fs -put Documents/Project/data/googleplaystore.csv project/data/apps
+hadoop fs -put Documents/Project/data/googleplaystore_user_reviews.csv project/data/reviews
+
+-----------HIVE---------
+hive
+
+CREATE DATABASE playstore;
+
+use playstore;
+
+CREATE EXTERNAL TABLE app (name VARCHAR(100), category VARCHAR(50), rating FLOAT, reviews INT, size VARCHAR(5), installs VARCHAR(20), type VARCHAR(20), price FLOAT, content_rating VARCHAR(20), genres VARCHAR(50), last_updated VARCHAR(15), current_version VARCHAR(15), android_version VARCHAR(10)) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde' WITH SERDEPROPERTIES ('separatorChar' = ',', 'quoteChar' = '"', 'escapeChar' = '\\') LOCATION '/user/cloudera/project/data/apps' TBLPROPERTIES ('skip.header.line.count' = '1');
+
+CREATE EXTERNAL TABLE review (app VARCHAR(100), translated_review VARCHAR(50), sentiment VARCHAR(15), sentiment_polarity FLOAT, sentiment_subjectivity FLOAT) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde' WITH SERDEPROPERTIES ('separatorChar' = ',', 'quoteChar' = '"', 'escapeChar' = '\\') LOCATION '/user/cloudera/project/data/reviews' TBLPROPERTIES ('skip.header.line.count' = '1');
+
+# Benchmark query ~ 33 seconds
+SELECT type, count(type) FROM playstore.app GROUP BY type;
+
+-----------SparkQL-------
+spark-shell --driver-java-options "-Dhive.metastore.uris=thrift://localhost:9083"
+
+# Benchmark query ~ 2 seconds
+spark.sql("select * from playstore.app").groupBy("type").count().show()
+
+-----------Python Notebook---------
+jupyter notebook
+
+

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.spark.SparkConf;
-
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaPairInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
@@ -16,20 +15,22 @@ import org.springframework.web.client.RestTemplate;
 import kafka.serializer.StringDecoder;
 
 import com.google.gson.Gson;
+import mum.edu.cs523.BtcRate;
+
 
 public class App {
 
 	public static void main(String[] args) throws InterruptedException {
 
 		// Create a Java Streaming Context with a Batch Interval of 5 seconds
-		SparkConf conf = new SparkConf().setAppName("KafkaSparkr").setMaster("local");
+		SparkConf conf = new SparkConf().setAppName("KafkaSpark").setMaster("local");
 		JavaStreamingContext jssc = new JavaStreamingContext(conf, Durations.seconds(60));
 
 		// Specify the Kafka Broker Options and set of Topics
 		String broker = "localhost:9092";
 		Map<String, String> kafkaParameters = new HashMap<String, String>();
 		kafkaParameters.put("metadata.broker.list", broker);
-		Set<String> topics = Collections.singleton("greetingtopic_latest");
+		Set<String> topics = Collections.singleton("btc_stream");
 
 		// Create an input DStream using KafkaUtils and simple plain-text
 		// message processing
@@ -66,11 +67,16 @@ public class App {
 	 */
 	static private boolean sendToElasticSearch(BtcRate btcRate) {
 		String url = "http://localhost:9200/cs523/bitcoin_rate";
+		
 		RestTemplate restTemplate = new RestTemplate();
 		Object result = restTemplate.postForObject(url, btcRate, Object.class);
 
 		System.out.println(result);
+		
+		
 		return true;
 	}
+	
+
 
 }

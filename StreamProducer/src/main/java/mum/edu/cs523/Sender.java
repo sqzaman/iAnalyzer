@@ -10,7 +10,7 @@ public class Sender {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
-    @Value("${app.topic.greetingtopic}")
+    @Value("${app.topic.btc_stream}")
     private String topic;
 
     public void send(String message){
